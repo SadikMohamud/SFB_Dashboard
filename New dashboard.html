@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFB Dashboard | Live Booking Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #fcd535;
+            --primary-dark: #e6c12f;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8b8;
+            --accent: #ffdd35;
+            --glass: rgba(255, 255, 255, 0.08);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 25px 50px rgba(0, 0, 0, 0.5);
+            --border-glass: 1px solid rgba(255, 255, 255, 0.15);
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --info: #2196F3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(252, 213, 53, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(255, 221, 53, 0.05) 0%, transparent 25%);
+        }
+
+        .login-container {
+            background: var(--glass);
+            border: var(--border-glass);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            backdrop-filter: blur(20px);
+            text-align: center;
+            max-width: 440px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(252, 213, 53, 0.05), transparent);
+            transition: left 0.7s ease;
+        }
+
+        .login-container:hover::before {
+            left: 100%;
+        }
+
+        .login-logo {
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .login-title {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            background: var(--bg-card);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(252, 213, 53, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .login-btn {
+            background: var(--gradient);
+            color: var(--bg-primary);
+            border: none;
+            padding: 1.2rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .login-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .login-error {
+            color: var(--danger);
+            margin-top: 1rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: rgba(244, 67, 54, 0.1);
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .security-notice {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* Header */
+        .dashboard-header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: var(--border-glass);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .dashboard-logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .last-update {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Main Content */
+        .dashboard-content {
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--glass);
+            border: var(--border-glass);
+            border-radius: 18px;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(252, 213, 53, 0.05), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 54px;
+            height: 54px;
+            background: var(--gradient);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--bg-primary);
+            margin: 0 auto 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: var(--gradient);
+            color: var(--bg-primary);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--glass);
+            color: var(--text-primary);
+            border: var(--border-glass);
+        }
+
+        /* Bookings Container */
+        .bookings-container {
+            background: var(--glass);
+            border: var(--border-glass);
+            border-radius: 20px;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .booking-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .booking-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(252, 213, 53, 0.05), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .booking-card:hover::before {
+            left: 100%;
+        }
+
+        .booking-card:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow);
+        }
+
+        .booking-card.new {
+            border-left-color: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .booking-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .booking-time {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            background: var(--glass);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            border: var(--border-glass);
+            white-space: nowrap;
+        }
+
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .booking-detail {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .booking-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: var(--glass);
+            border: var(--border-glass);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .action-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .action-btn.confirm {
+            color: var(--success);
+        }
+
+        .action-btn.cancel {
+            color: var(--danger);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--glass);
+            border: var(--border-glass);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            backdrop-filter: blur(20px);
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10000;
+            border-left: 4px solid var(--success);
+            max-width: 350px;
+            box-shadow: var(--shadow);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.error {
+            border-left-color: var(--danger);
+        }
+
+        .notification.warning {
+            border-left-color: var(--warning);
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .notification-message {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 3px solid transparent;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Shake animation for wrong password */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .dashboard-content {
+                padding: 1rem;
+            }
+            
+            .login-container {
+                padding: 2.5rem 2rem;
+            }
+            
+            .booking-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .booking-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .notification {
+                right: 1rem;
+                left: 1rem;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 2rem 1.5rem;
+            }
+            
+            .booking-card {
+                padding: 1.2rem;
+            }
+            
+            .booking-actions {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                justify-content: center;
+            }
+        }
+
+        /* Button loading state */
+        .btn-loading {
+            color: transparent;
+            pointer-events: none;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 18px;
+            height: 18px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--bg-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <div class="login-logo">SFB</div>
+            <h1 class="login-title">Owner Dashboard</h1>
+            <p class="login-subtitle">Secure access to your booking management system</p>
+            
+            <input type="password" class="login-input" id="passwordInput" 
+                   placeholder="Enter access password" autocomplete="off"
+                   autofocus>
+            <button class="login-btn" id="loginBtn" onclick="attemptLogin()">
+                <i class="fas fa-lock-open"></i> Access Dashboard
+            </button>
+            
+            <div class="login-error" id="loginError">
+                <i class="fas fa-exclamation-triangle"></i> Invalid password
+            </div>
+
+            <div class="security-notice">
+                <i class="fas fa-shield-alt"></i> Secure access • Encrypted session
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="dashboard-logo">
+                <i class="fas fa-cut"></i> SFB Dashboard • LIVE
+            </div>
+            <div class="header-controls">
+                <span class="last-update" id="lastUpdate">Last updated: Just now</span>
+                <button class="btn btn-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+              <div class="dashboard-content">
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <span class="stat-number" id="totalBookings">0</span>
+                    <span class="stat-label">Total Bookings</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span class="stat-number" id="todayBookings">0</span>
+                    <span class="stat-label">Today's Bookings</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <span class="stat-number" id="pendingBookings">0</span>
+                    <span class="stat-label">Pending</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <span class="stat-number" id="popularService">-</span>
+                    <span class="stat-label">Popular Service</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+                <button class="btn btn-secondary" onclick="toggleAutoRefresh()">
+                    <i class="fas fa-clock"></i> Auto-Refresh: <span id="autoRefreshStatus">ON</span>
+                </button>
+                <button class="btn btn-secondary" onclick="markAllAsSeen()">
+                    <i class="fas fa-eye"></i> Mark All Seen
+                </button>
+            </div>
+
+            <!-- Bookings List -->
+            <div class="bookings-container">
+                <h2 class="section-title">
+                    <i class="fas fa-list"></i> Live Bookings
+                    <span id="newBookingsBadge" style="background: var(--success); color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; display: none;">New</span>
+                </h2>
+                <div id="bookingsList">
+                    <div class="loading">
+                        <div class="loader"></div>
+                        <p>Loading real bookings from Google Sheets...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-title" id="notificationTitle">
+            <i class="fas fa-bell"></i> New Booking!
+        </div>
+        <div class="notification-message" id="notificationMessage"></div>
+    </div>
+
+    <script>
+        // Configuration - REAL DATA ONLY
+        const CONFIG = {
+            password: "SFB2025", // CHANGE THIS PASSWORD!
+            
+            // Your Google Apps Script URL
+            googleScriptURL: "https://script.google.com/macros/s/AKfycbzNo_cS8j0jhdfOFTsyR7Ma-5ZHkr4LLo8WLjHoqZ_7L-x4Y7_ZRsn89ozYyq-PA_FavQ/exec",
+            
+            refreshInterval: 30000, // 30 seconds
+            autoRefresh: true,
+            maxAttempts: 5,
+            lockoutTime: 300000, // 5 minutes
+            sessionDuration: 2 * 60 * 60 * 1000 // 2 hours
+        };
+
+        // State
+        let bookings = [];
+        let lastBookingCount = 0;
+        let refreshInterval;
+        let loginAttempts = 0;
+        let lockedUntil = 0;
+        let lastSeenBookings = [];
+
+        // Password Functions
+        function attemptLogin() {
+            if (isSystemLocked()) {
+                const remaining = getRemainingLockoutTime();
+                showError(`Too many failed attempts. Try again in ${remaining} seconds.`);
+                return;
+            }
+
+            const passwordInput = document.getElementById('passwordInput');
+            const loginBtn = document.getElementById('loginBtn');
+            const password = passwordInput.value;
+
+            // Show loading state
+            loginBtn.classList.add('btn-loading');
+            loginBtn.disabled = true;
+
+            // Simulate processing time
+            setTimeout(() => {
+                if (password === CONFIG.password) {
+                    // Successful login
+                    loginAttempts = 0;
+                    grantAccess();
+                } else {
+                    // Failed login
+                    loginAttempts++;
+                    handleFailedLogin();
+                }
+
+                // Reset button state
+                loginBtn.classList.remove('btn-loading');
+                loginBtn.disabled = false;
+            }, 800);
+        }
+
+        function isSystemLocked() {
+            return Date.now() < lockedUntil;
+        }
+
+        function getRemainingLockoutTime() {
+            return Math.ceil((lockedUntil - Date.now()) / 1000);
+        }
+
+        function handleFailedLogin() {
+            const remainingAttempts = CONFIG.maxAttempts - loginAttempts;
+            
+            if (loginAttempts >= CONFIG.maxAttempts) {
+                // Lock the system
+                lockedUntil = Date.now() + CONFIG.lockoutTime;
+                showError(`Too many failed attempts. System locked for 5 minutes.`);
+            } else {
+                showError(`Invalid password. ${remainingAttempts} attempts remaining.`);
+            }
+
+            // Shake animation
+            document.getElementById('loginScreen').classList.add('shake');
+            setTimeout(() => {
+                document.getElementById('loginScreen').classList.remove('shake');
+            }, 500);
+
+            // Clear input and refocus
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordInput').focus();
+        }
+
+        function grantAccess() {
+            // Hide login, show dashboard
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            
+            // Set session expiration
+            const sessionExpiry = Date.now() + CONFIG.sessionDuration;
+            localStorage.setItem('dashboardSession', sessionExpiry.toString());
+            localStorage.setItem('dashboardAuthenticated', 'true');
+            
+            // Load last seen bookings
+            lastSeenBookings = JSON.parse(localStorage.getItem('lastSeenBookings') || '[]');
+            
+            // Initialize dashboard
+            initDashboard();
+        }
+
+        function checkExistingSession() {
+            const sessionExpiry = localStorage.getItem('dashboardSession');
+            const isAuthenticated = localStorage.getItem('dashboardAuthenticated');
+            
+            if (isAuthenticated === 'true' && sessionExpiry) {
+                if (Date.now() < parseInt(sessionExpiry)) {
+                    // Valid session exists
+                    grantAccess();
+                    return true;
+                } else {
+                    // Session expired
+                    localStorage.removeItem('dashboardSession');
+                    localStorage.removeItem('dashboardAuthenticated');
+                }
+            }
+            return false;
+        }
+
+        function logout() {
+            localStorage.removeItem('dashboardSession');
+            localStorage.removeItem('dashboardAuthenticated');
+            location.reload();
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('loginError');
+            errorEl.textContent = message;
+            errorEl.style.display = 'flex';
+        }
+
+        // Dashboard Functions - REAL DATA ONLY
+        function initDashboard() {
+            loadBookings();
+            if (CONFIG.autoRefresh) {
+                startAutoRefresh();
+            }
+            
+            // Start session timer
+            startSessionTimer();
+        }
+
+        async function loadBookings() {
+            try {
+                console.log('Loading REAL bookings from Google Apps Script...');
+                
+                // Fetch from your Google Apps Script
+                const response = await fetch(CONFIG.googleScriptURL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('REAL data from Google Apps Script:', result);
+
+                if (result && result.status === 'success') {
+                    if (result.data && Array.isArray(result.data)) {
+                        // Process real booking data
+                        processRealBookingsData(result.data);
+                    } else {
+                        // No real data available
+                        showNoRealData();
+                    }
+                } else {
+                    throw new Error(result.message || 'Failed to load real data');
+                }
+
+            } catch (error) {
+                console.error('Error loading REAL bookings:', error);
+                showNoRealData();
+                showNotification('Failed to load real booking data', 'error');
+            }
+        }
+
+        function processRealBookingsData(bookingsData) {
+            if (!bookingsData || bookingsData.length === 0) {
+                showNoRealData();
+                return;
+            }
+
+            // Transform real data for our dashboard
+            bookings = bookingsData.map((booking, index) => {
+                // Create a unique identifier for this booking
+                const bookingKey = `${booking.name}-${booking.date}-${booking.time}`;
+                
+                return {
+                    id: index + 1,
+                    timestamp: booking.timestamp || new Date().toISOString(),
+                    name: booking.name || 'Unknown',
+                    email: booking.email || '',
+                    phone: booking.phone || '',
+                    service: booking.service || 'Unknown Service',
+                    date: booking.date || '',
+                    time: booking.time || '',
+                    notes: booking.notes || '',
+                    status: booking.status || 'pending',
+                    bookingId: booking.bookingId || `SFB${Date.now()}${index}`,
+                    isNew: !lastSeenBookings.includes(bookingKey)
+                };
+            }).filter(booking => booking.name && booking.name !== 'Unknown'); // Filter out empty bookings
+
+            console.log('Processed REAL bookings:', bookings);
+
+            // Update UI with real data
+            updateDashboard();
+            
+            // Show notification if new real bookings
+            const newBookings = bookings.filter(booking => booking.isNew);
+            if (newBookings.length > 0) {
+                showNotification(`🎉 ${newBookings.length} new booking${newBookings.length > 1 ? 's' : ''} received!`, 'success');
+                
+                // Update new bookings badge
+                const badge = document.getElementById('newBookingsBadge');
+                badge.textContent = `${newBookings.length} New`;
+                badge.style.display = 'inline-block';
+            }
+
+            lastBookingCount = bookings.length;
+        }
+
+        function showNoRealData() {
+            const container = document.getElementById('bookingsList');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-database"></i></div>
+                    <p>No real booking data available</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem;">
+                        Your Google Sheets might be empty or there's a connection issue.<br>
+                        Check your form submissions and Google Apps Script configuration.
+                    </p>
+                    <div style="margin-top: 1.5rem;">
+                        <button class="btn" onclick="loadBookings()">
+                            <i class="fas fa-sync-alt"></i> Try Again
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Reset stats
+            document.getElementById('totalBookings').textContent = '0';
+            document.getElementById('todayBookings').textContent = '0';
+            document.getElementById('pendingBookings').textContent = '0';
+            document.getElementById('popularService').textContent = '-';
+        }
+
+        function updateDashboard() {
+            updateStats();
+            renderBookings();
+            updateLastUpdateTime();
+        }
+
+        function updateStats() {
+            document.getElementById('totalBookings').textContent = bookings.length;
+            
+            const today = new Date().toISOString().split('T')[0];
+            const todayBookings = bookings.filter(booking => booking.date === today).length;
+            document.getElementById('todayBookings').textContent = todayBookings;
+            
+            const pendingBookings = bookings.filter(booking => booking.status === 'pending').length;
+            document.getElementById('pendingBookings').textContent = pendingBookings;
+            
+            // Find most popular service
+            const serviceCount = {};
+            bookings.forEach(booking => {
+                serviceCount[booking.service] = (serviceCount[booking.service] || 0) + 1;
+            });
+            
+            let popularService = 'None';
+            let maxCount = 0;
+            
+            for (const service in serviceCount) {
+                if (serviceCount[service] > maxCount) {
+                    maxCount = serviceCount[service];
+                    popularService = service;
+                }
+            }
+            
+            document.getElementById('popularService').textContent = popularService;
+        }
+
+        function renderBookings() {
+            const container = document.getElementById('bookingsList');
+            
+            if (bookings.length === 0) {
+                showNoRealData();
+                return;
+            }
+            
+            container.innerHTML = bookings.map(booking => `
+                <div class="booking-card ${booking.isNew ? 'new' : ''}" id="booking-${booking.id}">
+                    <div class="booking-header">
+                        <div class="booking-title">${booking.service} - ${booking.name}</div>
+                        <div class="booking-time">${formatDate(booking.date)} at ${booking.time}</div>
+                    </div>
+                    <div class="booking-details">
+                        <div class="booking-detail">
+                            <span class="detail-label">Client</span>
+                            <span class="detail-value">${booking.name}</span>
+                        </div>
+                        <div class="booking-detail">
+                            <span class="detail-label">Contact</span>
+                            <span class="detail-value">${booking.phone}</span>
+                        </div>
+                        <div class="booking-detail">
+                            <span class="detail-label">Service</span>
+                            <span class="detail-value">${booking.service}</span>
+                        </div>
+                        <div class="booking-detail">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value" style="color: ${booking.status === 'confirmed' ? 'var(--success)' : 'var(--warning)'}">
+                                ${booking.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                            </span>
+                        </div>
+                    </div>
+                    ${booking.notes ? `
+                    <div class="booking-detail" style="margin-top: 1rem;">
+                        <span class="detail-label">Notes</span>
+                        <span class="detail-value">${booking.notes}</span>
+                    </div>
+                    ` : ''}
+                    <div class="booking-actions">
+                        <button class="action-btn confirm" onclick="confirmBooking(${booking.id})">
+                            <i class="fas fa-check"></i> Confirm
+                        </button>
+                        <button class="action-btn" onclick="contactClient(${booking.id})">
+                            <i class="fas fa-phone"></i> Call
+                        </button>
+                        <button class="action-btn" onclick="markAsSeen(${booking.id})">
+                            <i class="fas fa-eye"></i> Mark Seen
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'No date';
+            try {
+                const options = { weekday: 'short', month: 'short', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString('en-US', options);
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const title = document.getElementById('notificationTitle');
+            const messageEl = document.getElementById('notificationMessage');
+            
+            // Set icon and color based on type
+            if (type === 'success') {
+                title.innerHTML = '<i class="fas fa-bell"></i> New Booking!';
+                notification.classList.remove('error', 'warning');
+            } else if (type === 'error') {
+                title.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                notification.classList.add('error');
+                notification.classList.remove('warning');
+            } else if (type === 'warning') {
+                title.innerHTML = '<i class="fas fa-exclamation-circle"></i> Notice';
+                notification.classList.add('warning');
+                notification.classList.remove('error');
+            }
+            
+            messageEl.textContent = message;
+            notification.classList.add('show');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        function updateLastUpdateTime() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = 
+                `Last updated: ${now.toLocaleTimeString()}`;
+        }
+
+        function refreshData() {
+            loadBookings();
+            showNotification('Refreshing real booking data...', 'success');
+        }
+
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                refreshData();
+            }, CONFIG.refreshInterval);
+        }
+
+        function toggleAutoRefresh() {
+            CONFIG.autoRefresh = !CONFIG.autoRefresh;
+            const statusEl = document.getElementById('autoRefreshStatus');
+            
+            if (CONFIG.autoRefresh) {
+                startAutoRefresh();
+                statusEl.textContent = 'ON';
+                showNotification('Auto-refresh enabled', 'success');
+            } else {
+                clearInterval(refreshInterval);
+                statusEl.textContent = 'OFF';
+                showNotification('Auto-refresh disabled', 'warning');
+            }
+        }
+
+        function startSessionTimer() {
+            const sessionExpiry = localStorage.getItem('dashboardSession');
+            if (sessionExpiry) {
+                const timeLeft = parseInt(sessionExpiry) - Date.now();
+                if (timeLeft > 0) {
+                    setTimeout(() => {
+                        showNotification('Session expired. Please log in again.', 'warning');
+                        setTimeout(logout, 3000);
+                    }, timeLeft);
+                }
+            }
+        }
+
+        // Action functions
+        function confirmBooking(bookingId) {
+            const booking = bookings.find(b => b.id === bookingId);
+            if (booking) {
+                booking.status = 'confirmed';
+                updateDashboard();
+                showNotification(`Booking confirmed for ${booking.name}`, 'success');
+            }
+        }
+
+        function contactClient(bookingId) {
+            const booking = bookings.find(b => b.id === bookingId);
+            if (booking) {
+                // Open phone dialer
+                window.open(`tel:${booking.phone}`);
+                showNotification(`Calling ${booking.name} at ${booking.phone}`, 'success');
+            }
+        }
+
+        function markAsSeen(bookingId) {
+            const booking = bookings.find(b => b.id === bookingId);
+            if (booking) {
+                booking.isNew = false;
+                // Add to last seen
+                const bookingKey = `${booking.name}-${booking.date}-${booking.time}`;
+                if (!lastSeenBookings.includes(bookingKey)) {
+                    lastSeenBookings.push(bookingKey);
+                    localStorage.setItem('lastSeenBookings', JSON.stringify(lastSeenBookings));
+                }
+                updateDashboard();
+                showNotification(`Booking marked as seen`, 'success');
+            }
+        }
+
+        function markAllAsSeen() {
+            bookings.forEach(booking => {
+                booking.isNew = false;
+                const bookingKey = `${booking.name}-${booking.date}-${booking.time}`;
+                if (!lastSeenBookings.includes(bookingKey)) {
+                    lastSeenBookings.push(bookingKey);
+                }
+            });
+            localStorage.setItem('lastSeenBookings', JSON.stringify(lastSeenBookings));
+            updateDashboard();
+            document.getElementById('newBookingsBadge').style.display = 'none';
+            showNotification('All bookings marked as seen', 'success');
+        }
+
+        // Event listeners
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                attemptLogin();
+            }
+        });
+
+        // Clear error when typing
+        document.getElementById('passwordInput').addEventListener('input', function() {
+            document.getElementById('loginError').style.display = 'none';
+        });
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (checkExistingSession()) {
+                // Already logged in
+            } else {
+                // Focus password input
+                setTimeout(() => {
+                    document.getElementById('passwordInput').focus();
+                }, 500);
+            }
+        });
+
+        console.log('Dashboard initialized - REAL DATA ONLY MODE');
+        console.log('Google Apps Script URL:', CONFIG.googleScriptURL);
+    </script>
+</body>
+</html>
